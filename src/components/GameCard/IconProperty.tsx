@@ -1,4 +1,4 @@
-import { Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import styles from "./GameCard.module.css"
 
 export interface IconPropertyProps {
@@ -11,9 +11,9 @@ const IconProperty = ({ icon, property, value }: IconPropertyProps) => {
   return (
     <Stack direction={"row"} alignItems={"center"}  gap={.3}>
       {icon}
-      <Typography className={styles.properties}>
+      <Box className={styles.properties}>
         {property}{property ? ": " : null}{value}
-      </Typography>
+      </Box>
     </Stack>
   );
 };

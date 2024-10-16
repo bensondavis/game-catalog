@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import placeholder from "@/img/placeholder.png";
 import Image from "next/image";
-import Game from "@/interfaces/Game";
+import Game from "@/types/Game";
 import styles from "./GameCard.module.css";
 import { BookOpen, Calendar, Users } from "lucide-react";
 import IconProperty, { IconPropertyProps } from "./IconProperty";
@@ -57,8 +57,7 @@ const GameCard = ({
       <Image
         src={imgSrc || placeholder}
         alt="game thumbnail"
-        style={{ height: "100%", width: "100%" }}
-        objectFit="cover"
+        style={{ height: "100%", width: "100%", objectFit: "cover" }}
       />
       <CardContent>
         <Typography variant="h5" className={styles.title}>
@@ -66,13 +65,13 @@ const GameCard = ({
             <span>{name}</span>
           </Tooltip>
         </Typography>
-        
+
         <Divider sx={{ mt: 2 }} />
 
         <Stack direction={"column"} spacing={0.7} sx={{ mt: 2 }}>
-          {IconPropertyMap.map((item) => (
+          {IconPropertyMap.map((item, index) => (
             <IconProperty
-              key={item.property}
+              key={index}
               icon={item.icon}
               property={item.property}
               value={item.value}

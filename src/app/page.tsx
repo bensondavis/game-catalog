@@ -10,7 +10,10 @@ import CustomTextField from "@/components/CustomTextField";
 import gamePlayerMenu from "@/data/gamePlayersMenu";
 import GameCard from "@/components/GameCard/GameCard";
 import axios from "axios";
-import Game from "@/interfaces/Game";
+import Game from "@/types/Game";
+import SortConfig from "@/types/SortConfig";
+import SortMenu from "@/components/SortMenu/SortMenu";
+import { orderBy } from "natural-orderby";
 
 export default function Home() {
   const [games, setGames] = useState<Game[]>([]);
@@ -18,6 +21,11 @@ export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [filterPlayers, setFilterPlayers] = useState("all");
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "name",
+    direction: "asc",
+    sort: false,
+  });
 
   const handleFilterTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFilterType(e.target.value);
@@ -47,6 +55,23 @@ export default function Home() {
 
     setFilteredGames(filtered);
   }, [searchTerm, filterType, filterPlayers]);
+
+  useEffect(() => {
+    if (sortConfig.sort) {
+      const sorted = orderBy(
+        filteredGames,
+        [
+          (g) => {
+            if (sortConfig.key === "players.min") return g.players.min;
+            else return g[sortConfig.key];
+          },
+        ],
+        [sortConfig.direction]
+      );
+
+      setFilteredGames(sorted);
+    }
+  }, [sortConfig]);
   return (
     <Box className={styles.page}>
       <header className={styles["title-container"]}>
@@ -91,6 +116,8 @@ export default function Home() {
           menuItems={gamePlayerMenu}
           classNames={styles.selection}
         />
+
+        <SortMenu sortConfig={sortConfig} setSortConfig={setSortConfig} />
       </Stack>
 
       <Grid2
@@ -99,9 +126,10 @@ export default function Home() {
         columns={{ md: 12, sm: 8, xs: 4 }}
       >
         {games
-          ? filteredGames.map((game) => (
-              <Grid2 size={4} className={styles["games-grid-item"]}>
+          ? filteredGames.map((game, index) => (
+              <Grid2 key={index} size={4} className={styles["games-grid-item"]}>
                 <GameCard
+                  key={game.id}
                   id={game.id}
                   name={game.name}
                   releaseYear={game.releaseYear}
