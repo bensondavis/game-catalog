@@ -123,7 +123,7 @@ export default function Home() {
       <Grid2
         container
         spacing={{ md: 3, sm: 2, xs: 2 }}
-        columns={{ md: 12, sm: 8, xs: 4 }}
+        columns={{ lg:16, md: 12, sm: 8, xs: 4 }}
       >
         {games
           ? filteredGames.map((game, index) => (
