@@ -1,95 +1,118 @@
-import Image from "next/image";
+"use client";
+
+import { Box, Grid2, InputAdornment, Stack, Typography } from "@mui/material";
 import styles from "./page.module.css";
+import CustomSelect from "@/components/CustomSelect";
+import gameTypes from "@/data/gameTypesMenu";
+import { ChangeEvent, useEffect, useState } from "react";
+import { Gamepad2 } from "lucide-react";
+import CustomTextField from "@/components/CustomTextField";
+import gamePlayerMenu from "@/data/gamePlayersMenu";
+import GameCard from "@/components/GameCard/GameCard";
+import axios from "axios";
+import Game from "@/interfaces/Game";
 
 export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol>
-          <li>
-            Get started by editing <code>src/app/page.tsx</code>.
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [games, setGames] = useState<Game[]>([]);
+  const [filteredGames, setFilteredGames] = useState<Game[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterPlayers, setFilterPlayers] = useState("all");
 
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const handleFilterTypeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFilterType(e.target.value);
+  };
+
+  const handleFilterPlayersChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFilterPlayers(e.target.value);
+  };
+
+  useEffect(() => {
+    axios.get("https://getboardgames-jxxjux7fua-ey.a.run.app").then((res) => {
+      setGames(res.data as Game[]);
+      setFilteredGames(res.data as Game[]);
+    });
+  }, []);
+
+  useEffect(() => {
+    const filtered = games.filter(
+      (game) =>
+        game.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (filterType === "all" || game.type === filterType) &&
+        (filterPlayers === "all" ||
+          (game.players.min <= parseInt(filterPlayers) &&
+            (game.players.max === undefined ||
+              game.players.max >= parseInt(filterPlayers))))
+    );
+
+    setFilteredGames(filtered);
+  }, [searchTerm, filterType, filterPlayers]);
+  return (
+    <Box className={styles.page}>
+      <header className={styles["title-container"]}>
+        <Typography variant="h4" className={styles.title}>
+          Board Games Catalog
+        </Typography>
+        <Typography variant="subtitle1" className={styles["muted-text"]}>
+          Discover your next favorite game
+        </Typography>
+      </header>
+
+      <Stack
+        spacing={2}
+        direction={"row"}
+        useFlexGap
+        className={styles["search-filter"]}
+      >
+        <CustomTextField
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          size="small"
+          placeholder="Search games..."
+          slotProps={{
+            input: {
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Gamepad2 />
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <CustomSelect
+          value={filterType}
+          onChange={handleFilterTypeChange}
+          menuItems={gameTypes}
+          classNames={styles.selection}
+        />
+        <CustomSelect
+          value={filterPlayers}
+          onChange={handleFilterPlayersChange}
+          menuItems={gamePlayerMenu}
+          classNames={styles.selection}
+        />
+      </Stack>
+
+      <Grid2
+        container
+        spacing={{ md: 3, sm: 2, xs: 2 }}
+        columns={{ md: 12, sm: 8, xs: 4 }}
+      >
+        {games
+          ? filteredGames.map((game) => (
+              <Grid2 size={4} className={styles["games-grid-item"]}>
+                <GameCard
+                  id={game.id}
+                  name={game.name}
+                  releaseYear={game.releaseYear}
+                  players={game.players}
+                  publisher={game.publisher}
+                  type={game.type}
+                />
+              </Grid2>
+            ))
+          : null}
+      </Grid2>
+    </Box>
   );
 }
