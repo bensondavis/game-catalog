@@ -60,7 +60,7 @@ const SortMenu = ({ sortConfig, setSortConfig }: SortMenuProps) => {
       </Button>
       <Menu open={open} onClose={handleClose} anchorEl={anchorEl}>
         <Stack className={styles.menu}>
-          <Stack className={styles["sort-toggle"]}>
+          <Stack direction={"row"} className={styles["sort-toggle"]}>
             <Typography>Sort:</Typography>
             <Switch checked={sortConfig.sort} onChange={handleSortToggle} />
           </Stack>
